@@ -1,0 +1,10 @@
+### POST
+#POST localhost:8080/api/user-information/search-information
+#Content-Type: application/json
+#
+#{
+#  "id": 12341,
+#  "nickname": "조형준"
+#}
+
+POST localhost:8080/api/ecotag/coordinate
