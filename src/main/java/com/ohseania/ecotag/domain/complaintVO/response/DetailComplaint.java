@@ -20,5 +20,7 @@ public class DetailComplaint {
     private String location;
     private List<String> photoUrls;
     private String regionName;
+    private Double longitude;
+    private Double latitude;
 
 }

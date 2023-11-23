@@ -40,7 +40,7 @@ public class MyPageServiceImpl implements MyPageService {
         int index = 0;
 
         for (Complaint complaint : complaints) {
-            List<Photo> photo = photoRepository.findByEcotag(complaint.getEcotag().getId());
+            List<Photo> photo = photoRepository.findByEcotagId(complaint.getEcotag().getId());
 
             myComplaint.add(MyComplaint.builder()
                     .processType(complaint.getProcessType())
@@ -62,7 +62,7 @@ public class MyPageServiceImpl implements MyPageService {
         Optional<User> user = userRepository.findById(userId);
 
         if (user.isPresent()) {
-            Photo profile = s3Service.uploadMedia(file);
+            Photo profile = s3Service.uploadMedia(file, null);
             User updatedUser = User.builder()
                     .id(userId)
                     .nickname(user.get().getNickname())

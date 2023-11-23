@@ -22,6 +22,8 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.jsoup:jsoup:1.15.3'	// crawling
+	implementation 'net.coobird:thumbnailator:0.4.14' // 현재 사용 가능한 최신 버전 확인
 	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.1.RELEASE' // s3 setting
 	implementation 'commons-io:commons-io:2.6' // MultipartFile
 	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2' // swagger

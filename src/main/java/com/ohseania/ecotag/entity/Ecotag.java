@@ -1,6 +1,8 @@
 package com.ohseania.ecotag.entity;
 
 
+import com.ohseania.ecotag.entity.Region;
+import com.ohseania.ecotag.entity.User;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;

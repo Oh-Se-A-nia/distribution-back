@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.ohseania.ecotag.entity.Ecotag;
 import com.ohseania.ecotag.entity.Photo;
 import com.ohseania.ecotag.repository.PhotoRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class S3ServiceImpl implements S3Service {
     private final AmazonS3Client amazonS3Client;
 
     @Override
-    public Photo uploadMedia(MultipartFile photo) {
+    public Photo uploadMedia(MultipartFile photo, Ecotag ecotag) {
         try {
             String fileName = photo.getOriginalFilename();
 
@@ -50,6 +51,7 @@ public class S3ServiceImpl implements S3Service {
                 .originFileName(photo.getOriginalFilename())
                 .type(photo.getContentType())
                 .url(photoUrl)
+                .ecotag(ecotag)
                 .build();
 
         photoRepository.save(uploadMedia);

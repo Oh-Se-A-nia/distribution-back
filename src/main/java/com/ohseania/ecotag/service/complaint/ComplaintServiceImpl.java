@@ -1,5 +1,6 @@
 package com.ohseania.ecotag.service.complaint;
 
+import com.ohseania.ecotag.entity.Ecotag;
 import com.ohseania.ecotag.domain.complaintVO.request.ComplaintForm;
 import com.ohseania.ecotag.domain.complaintVO.response.DetailComplaint;
 import com.ohseania.ecotag.domain.complaintVO.response.EntryComplaint;
@@ -102,6 +103,7 @@ public class ComplaintServiceImpl implements ComplaintService {
         if (complaint.isPresent()) {
             List<String> photoUrls = getPhotoUrl(complaint.get().getEcotag().getId());
             List<String> complaintDetails = getComplaintDetail(complaintId);
+            System.out.println(3);
 
             DetailComplaint detailComplaint = DetailComplaint.builder()
                     .cumulativeCount(complaint.get().getEcotag().getCumulativeCount())
@@ -113,8 +115,11 @@ public class ComplaintServiceImpl implements ComplaintService {
                     .ecotagType(complaint.get().getEcotag().getEcotagType())
                     .photoUrls(photoUrls)
                     .complaintDetails(complaintDetails)
+                    .latitude(complaint.get().getEcotag().getLatitude())
+                    .longitude(complaint.get().getEcotag().getLongitude())
                     .build();
 
+            System.out.println(4);
             return new ResponseEntity<>(detailComplaint, HttpStatus.OK);
         }
 
@@ -122,8 +127,8 @@ public class ComplaintServiceImpl implements ComplaintService {
     }
 
     private List<String> getPhotoUrl(Long ecotagId) {
-        Ecotag ecotag = ecotagRepository.findById(ecotagId).get();
-        List<Photo> photos = photoRepository.findByEcotag(ecotagId);
+        List<Photo> photos = photoRepository.findByEcotagId(ecotagId);
+
         List<String> urls = new ArrayList<>();
 
         for (Photo photo : photos) {
@@ -134,7 +139,7 @@ public class ComplaintServiceImpl implements ComplaintService {
     }
 
     private List<String> getComplaintDetail(Long complaintId) {
-        List<ComplaintDetail> complaintDetails = complaintDetailRepository.findByComplaint(complaintId);
+        List<ComplaintDetail> complaintDetails = complaintDetailRepository.findByComplaintId(complaintId);
         List<String> details = new ArrayList<>();
 
         for (ComplaintDetail complaintDetail : complaintDetails) {

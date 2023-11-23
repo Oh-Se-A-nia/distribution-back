@@ -1,5 +1,6 @@
 package com.ohseania.ecotag.service.ecotag;
 
+import com.ohseania.ecotag.entity.Ecotag;
 import com.ohseania.ecotag.domain.ecotagVO.request.EcotagForm;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcoTypeCountInterface;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcotagCoordinate;
@@ -42,7 +43,7 @@ public class EcotagServiceImpl implements EcotagService {
             Region region = regionService.formatRegion(ecotagForm.getLocation());
             ecotag = createEcotag(ecotagForm, region);
             ecotagRepository.save(ecotag);
-            setPhotofile(ecotagForm);
+            setPhotofile(ecotagForm, ecotag);
 
             return HttpStatus.OK;
         } catch (IllegalArgumentException e) {
@@ -63,8 +64,8 @@ public class EcotagServiceImpl implements EcotagService {
                 .build();
     }
 
-    private void setPhotofile(EcotagForm ecotagForm) {
-        Photo photo = s3Service.uploadMedia(ecotagForm.getPicture());
+    private void setPhotofile(EcotagForm ecotagForm, Ecotag ecotag) {
+        Photo photo = s3Service.uploadMedia(ecotagForm.getPicture(), ecotag);
         photoRepository.save(photo);
     }
 

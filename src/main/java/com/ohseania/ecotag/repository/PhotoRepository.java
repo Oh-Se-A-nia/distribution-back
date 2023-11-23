@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PhotoRepository extends JpaRepository<Photo, Long> {
 
-    List<Photo> findByEcotag(Long ecotagId);
+    List<Photo> findByEcotagId(Long ecotagId);
 
     Photo findByType(String type);
 

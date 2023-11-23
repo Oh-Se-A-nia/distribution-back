@@ -7,4 +7,6 @@
 #  "nickname": "조형준"
 #}
 
-POST localhost:8080/api/ecotag/coordinate
+#POST localhost:8080/api/ecotag/coordinate
+
+GET localhost:8080/api/letter
