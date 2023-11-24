@@ -30,7 +30,6 @@ public class EcotagServiceImpl implements EcotagService {
     private final EcotagRepository ecotagRepository;
     private final UserRepository userRepository;
     private final ComplaintRepository complaintRepository;
-    private final PhotoRepository photoRepository;
 
     private final RegionService regionService;
     private final S3Service s3Service;
@@ -43,7 +42,7 @@ public class EcotagServiceImpl implements EcotagService {
             Region region = regionService.formatRegion(ecotagForm.getLocation());
             ecotag = createEcotag(ecotagForm, region);
             ecotagRepository.save(ecotag);
-            setPhotofile(ecotagForm, ecotag);
+            s3Service.uploadMedia(ecotagForm.getPicture(), ecotag);
 
             return HttpStatus.OK;
         } catch (IllegalArgumentException e) {
@@ -62,11 +61,6 @@ public class EcotagServiceImpl implements EcotagService {
                 .longitude(Double.valueOf(ecotagForm.getLongitude()))
                 .location(ecotagForm.getLocation())
                 .build();
-    }
-
-    private void setPhotofile(EcotagForm ecotagForm, Ecotag ecotag) {
-        Photo photo = s3Service.uploadMedia(ecotagForm.getPicture(), ecotag);
-        photoRepository.save(photo);
     }
 
     private void updateCumulativeCount(Long id) {

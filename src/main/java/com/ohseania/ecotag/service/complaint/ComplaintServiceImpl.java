@@ -8,6 +8,7 @@ import com.ohseania.ecotag.entity.*;
 import com.ohseania.ecotag.repository.*;
 import com.ohseania.ecotag.service.ecotag.EcotagService;
 import com.ohseania.ecotag.service.region.RegionService;
+import com.ohseania.ecotag.service.s3.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -33,6 +32,7 @@ public class ComplaintServiceImpl implements ComplaintService {
     private final EcotagService ecotagService;
     private final RegionService regionService;
     private final EcotagRepository ecotagRepository;
+    private final S3Service s3Service;
 
     @Override
     public ResponseEntity postComplaint(ComplaintForm complaintForm) {
@@ -45,8 +45,10 @@ public class ComplaintServiceImpl implements ComplaintService {
 
             if (tmpEcotag != null) {
                 newEcotag = ecotagService.updateCumulativeCount(tmpEcotag);
-
             }
+
+            ecotagRepository.save(newEcotag);
+            s3Service.uploadMedia(complaintForm.getEcotag().getPicture(), newEcotag);
 
             Complaint complaint = complaintRepository.save(Complaint.builder()
                     .ecotag(newEcotag)
@@ -103,7 +105,6 @@ public class ComplaintServiceImpl implements ComplaintService {
         if (complaint.isPresent()) {
             List<String> photoUrls = getPhotoUrl(complaint.get().getEcotag().getId());
             List<String> complaintDetails = getComplaintDetail(complaintId);
-            System.out.println(3);
 
             DetailComplaint detailComplaint = DetailComplaint.builder()
                     .cumulativeCount(complaint.get().getEcotag().getCumulativeCount())
@@ -118,8 +119,6 @@ public class ComplaintServiceImpl implements ComplaintService {
                     .latitude(complaint.get().getEcotag().getLatitude())
                     .longitude(complaint.get().getEcotag().getLongitude())
                     .build();
-
-            System.out.println(4);
             return new ResponseEntity<>(detailComplaint, HttpStatus.OK);
         }
 
@@ -161,13 +160,14 @@ public class ComplaintServiceImpl implements ComplaintService {
             return originComplaint;
         }
 
+        List<Complaint> newComplaintList = new ArrayList<>();
         for (Complaint complaint : originComplaint) {
-            if (complaint.getEcotag().getEcotagType() != ecotagType) {
-                originComplaint.remove(complaint);
+            if (complaint.getEcotag().getEcotagType().equals(ecotagType)) {
+                newComplaintList.add(complaint);
             }
         }
 
-        return originComplaint;
+        return newComplaintList;
     }
 
     private List<Complaint> judgeRegion(List<Complaint> originComplaint, String region) {
@@ -175,13 +175,14 @@ public class ComplaintServiceImpl implements ComplaintService {
             return originComplaint;
         }
 
+        List<Complaint> newComplaintList = new ArrayList<>();
         for (Complaint complaint : originComplaint) {
-            if (complaint.getEcotag().getRegion().getRegionName() != region) {
-                originComplaint.remove(complaint);
+            if (complaint.getEcotag().getRegion().getRegionName().equals(region)) {
+                newComplaintList.add(complaint);
             }
         }
 
-        return originComplaint;
+        return newComplaintList;
     }
 
     private List<EntryComplaint> changeForm(List<Complaint> originComplaint) {

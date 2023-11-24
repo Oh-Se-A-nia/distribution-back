@@ -1,11 +1,13 @@
 package com.ohseania.ecotag.controller;
 
+import com.ohseania.ecotag.domain.userVO.request.LogIn;
 import com.ohseania.ecotag.domain.userVO.request.SignUpForm;
 import com.ohseania.ecotag.domain.userVO.response.UserInformation;
 import com.ohseania.ecotag.service.user.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,9 +21,16 @@ public class UserController {
 
     @ApiOperation(value = "회원가입 / 로그인 API")
     @PostMapping("/search-information")
-    private ResponseEntity<UserInformation> updateUserInformation(@RequestBody SignUpForm signUpForm) {
+    public ResponseEntity<UserInformation> updateUserInformation(@RequestBody SignUpForm signUpForm) {
         return userService.validateUserInformaion(signUpForm);  // 요청으로 온 회원 정보를 가지고
         // 회원 정보에 대한 검증을 하는 비즈니스 로직 호출
     }
+
+    @ApiOperation(value = "관리자 로그인")
+    @PostMapping("/admin-login")
+    public HttpStatus logInAdmin(@RequestBody LogIn logIn) {
+        return userService.loginAdmin(logIn);
+    }
+
 
 }

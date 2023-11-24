@@ -1,4 +1,4 @@
-package com.ohseania.ecotag.domain;
+package com.ohseania.ecotag.domain.crawlingVO.response;
 
 import lombok.*;
 
