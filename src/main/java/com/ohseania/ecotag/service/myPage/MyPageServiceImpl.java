@@ -54,19 +54,6 @@ public class MyPageServiceImpl implements MyPageService {
         return new ResponseEntity<>(myComplaint, HttpStatus.OK);
     }
 
-    private List<String> getUrlSet(List<Photo> photos) {
-        List<String> url = new ArrayList<>();
-        for (Photo photo : photos) {
-            url.add(photo.getUrl());
-        }
-
-        return url;
-    }
-
-    private String sortEcotagType(String originType) {
-        return TrashType.getSortedTypeByType(originType);
-    }
-
     @Override
     public HttpStatus updateProfile(Long userId, MultipartFile file) {
         Optional<User> user = userRepository.findById(userId);
@@ -104,6 +91,19 @@ public class MyPageServiceImpl implements MyPageService {
             return HttpStatus.OK;
         }
         return HttpStatus.BAD_REQUEST;
+    }
+
+    private List<String> getUrlSet(List<Photo> photos) {
+        List<String> url = new ArrayList<>();
+        for (Photo photo : photos) {
+            url.add(photo.getUrl());
+        }
+
+        return url;
+    }
+
+    private String sortEcotagType(String originType) {
+        return TrashType.getSortedTypeByType(originType);
     }
 
 }
