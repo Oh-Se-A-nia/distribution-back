@@ -14,6 +14,4 @@ public interface ContributionService {
 
     ResponseEntity<MyContribution> getContribution(Long userId);
 
-    void createContributionForm(User user);
-
 }

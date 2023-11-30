@@ -26,7 +26,7 @@ public class CleaningCompany {
     @Column(nullable = false)
     private String callNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String memo;
 
 }

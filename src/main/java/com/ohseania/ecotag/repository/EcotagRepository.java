@@ -27,4 +27,6 @@ public interface EcotagRepository extends JpaRepository<Ecotag, Long> {
 
     List<Ecotag> findByLatitudeAndLongitude(Double latitude, Double longitude);
 
+    List<Ecotag> findByEcotagType(String type);
+
 }

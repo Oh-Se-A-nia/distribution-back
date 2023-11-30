@@ -6,6 +6,7 @@ import com.ohseania.ecotag.domain.complaintVO.response.EntryComplaint;
 import com.ohseania.ecotag.entity.Complaint;
 import org.springframework.http.ResponseEntity;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface ComplaintService {
@@ -19,5 +20,7 @@ public interface ComplaintService {
     ResponseEntity updateProcessType(Long complaintId, String processTypeToChange);
 
     ResponseEntity<DetailComplaint> findDetailComplaint(Long complaintId);
+
+    ResponseEntity<LinkedHashMap<Integer, Integer>> findRecentComplaints();
 
 }

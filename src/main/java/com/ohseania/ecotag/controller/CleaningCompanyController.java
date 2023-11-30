@@ -27,9 +27,9 @@ public class CleaningCompanyController {
         return cleaningCompanyService.registCompany(companyRegistration);
     }
 
-    @ApiOperation(value = "전체 업체 조화")
+    @ApiOperation(value = "전체 업체 조회")
     @GetMapping("/cleaning-list")
-    public ResponseEntity<List<CleaningCompany>> viewCleaningList() {
+    public ResponseEntity<List<CompanyRegistration>> viewCleaningList() {
         return cleaningCompanyService.checkCleaningCompanys();
     }
 

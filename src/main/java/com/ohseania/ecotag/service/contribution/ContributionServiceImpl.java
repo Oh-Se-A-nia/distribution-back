@@ -3,9 +3,7 @@ package com.ohseania.ecotag.service.contribution;
 import com.ohseania.ecotag.domain.contributionVO.response.MyContribution;
 import com.ohseania.ecotag.domain.contributionVO.response.Rank;
 import com.ohseania.ecotag.domain.userVO.response.UserRank;
-import com.ohseania.ecotag.entity.Contribution;
 import com.ohseania.ecotag.entity.User;
-import com.ohseania.ecotag.repository.ContributionRepository;
 import com.ohseania.ecotag.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,6 @@ import java.util.List;
 public class ContributionServiceImpl implements ContributionService {
 
     private final UserRepository userRepository;
-    private final ContributionRepository contributionRepository;
 
     @Override
     public ResponseEntity<List<Rank>> getRanking() {
@@ -61,17 +58,6 @@ public class ContributionServiceImpl implements ContributionService {
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @Override
-    public void createContributionForm(User user) {
-//        System.out.println("User : " + user.toString());
-        Contribution contribution = Contribution.builder()
-                .user(user)
-                .actionCount(0L)
-                .build();
-
-        contributionRepository.save(contribution);
     }
 
     private Long findTotalEcotag() {

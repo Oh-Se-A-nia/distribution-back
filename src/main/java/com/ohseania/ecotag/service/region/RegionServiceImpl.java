@@ -20,7 +20,6 @@ public class RegionServiceImpl implements RegionService {
     private final RegionRepository regionRepository;
 
     public Region formatRegion(String location) {
-        System.out.println(location);
         StringTokenizer st = new StringTokenizer(location);
         List<String> locationToken = new ArrayList<>();
 

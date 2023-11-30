@@ -11,6 +11,6 @@ public interface CleaningCompanyService {
 
     HttpStatus registCompany(CompanyRegistration companyRegistration);
 
-    ResponseEntity<List<CleaningCompany>> checkCleaningCompanys();
+    ResponseEntity<List<CompanyRegistration>> checkCleaningCompanys();
 
 }

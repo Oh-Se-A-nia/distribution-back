@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Api(tags = {"Complaint API"}, description = "민원 서비스")
@@ -32,6 +33,7 @@ public class ComplaintController {
                                          @RequestParam(value = "userId") String userId,
                                          @RequestParam(value = "postDetail") String postDetail
     ) {
+        System.out.println(longitude);
         EcotagForm ecotagForm = EcotagForm.builder()
                 .type(type)
                 .picture(picture)
@@ -73,6 +75,12 @@ public class ComplaintController {
             @RequestParam(value = "complaintId") Long complaintId
     ) {
         return complaintService.findDetailComplaint(complaintId);
+    }
+
+    @ApiOperation(value = "일주일 간 누적 민원 수 제공")
+    @GetMapping("/cumulative")
+    public ResponseEntity<LinkedHashMap<Integer, Integer>> getCumulativeComplaintCount() {
+        return complaintService.findRecentComplaints();
     }
 
 }

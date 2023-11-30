@@ -5,10 +5,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 public class EcotagCoordinate {
 
     private boolean isComplaint;

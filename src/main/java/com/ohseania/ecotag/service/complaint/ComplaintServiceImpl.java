@@ -16,6 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Slf4j
@@ -28,35 +32,39 @@ public class ComplaintServiceImpl implements ComplaintService {
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
     private final ComplaintDetailRepository complaintDetailRepository;
+    private final EcotagRepository ecotagRepository;
+    private final MyPageRepository myPageRepository;
 
     private final EcotagService ecotagService;
     private final RegionService regionService;
-    private final EcotagRepository ecotagRepository;
     private final S3Service s3Service;
 
     @Override
     public ResponseEntity postComplaint(ComplaintForm complaintForm) {
+        Complaint complaint;
         try {
             Region region = regionService.formatRegion(complaintForm.getEcotag().getLocation());
             Ecotag newEcotag = ecotagService.createEcotag(complaintForm.getEcotag(), region);
             User writer = findUser(complaintForm.getEcotag().getUserId());
 
-            Ecotag tmpEcotag = isEqualPost(complaintForm.getEcotag().getLatitude(), complaintForm.getEcotag().getLongitude());
+            Ecotag tmpEcotag = isEqualPost(complaintForm);
 
             if (tmpEcotag != null) {
                 newEcotag = ecotagService.updateCumulativeCount(tmpEcotag);
             }
-
-            ecotagRepository.save(newEcotag);
+            newEcotag = ecotagRepository.save(newEcotag);
             s3Service.uploadMedia(complaintForm.getEcotag().getPicture(), newEcotag);
 
-            Complaint complaint = complaintRepository.save(Complaint.builder()
-                    .ecotag(newEcotag)
+            if (tmpEcotag != null) {
+                complaint = processEqualComplaint(newEcotag);
+            } else {
+                complaint = processDifferentComplaint(newEcotag, writer);
+            }
+            complaintDetailRepository.save(createComplaintDetail(complaintForm.getPostDetail(), complaint));
+            myPageRepository.save(MyPage.builder()
+                    .complaint(complaint)
                     .user(writer)
                     .build());
-
-            complaintDetailRepository.save(createComplaintDetail(complaintForm.getPostDetail(), complaint));
-
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
@@ -123,6 +131,60 @@ public class ComplaintServiceImpl implements ComplaintService {
         }
 
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<LinkedHashMap<Integer, Integer>> findRecentComplaints() {
+        Date sevenDaysAgo = getSevenDaysAgoDate();
+        List<Complaint> currentComplaint = complaintRepository.findByDateAfter(sevenDaysAgo);
+
+        LinkedHashMap<Integer, Integer> complaints = initDateMap();
+        complaints = getCumulativeComplaints(currentComplaint);
+
+        return new ResponseEntity<>(complaints, HttpStatus.OK);
+    }
+
+    private LinkedHashMap<Integer, Integer> initDateMap() {
+        LinkedHashMap<Integer, Integer> linkedHashMap = new LinkedHashMap<>();
+        for (int i = 0; i < 7; i++) {
+            linkedHashMap.put(-i, 0);
+        }
+
+        return linkedHashMap;
+    }
+
+    private LinkedHashMap<Integer, Integer> getCumulativeComplaints(List<Complaint> currentComplaints) {
+        LinkedHashMap<Integer, Integer> cumulativeComplaint = initDateMap();
+        LocalDate now = LocalDate.now();
+        Date standard = Date.from(now.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        for (Complaint complaint : currentComplaints) {
+            int restDays = Math.toIntExact(getDurationDate(standard, complaint.getCreationDate()));
+            int value = cumulativeComplaint.getOrDefault(restDays, 0);
+            cumulativeComplaint.put(restDays, value + 1);
+        }
+
+        return cumulativeComplaint;
+    }
+
+    private Long getDurationDate(Date standardDate, LocalDate targetDate) {
+        Instant standard = standardDate.toInstant();
+        Instant target = changeDateForm(targetDate).toInstant();
+
+        Duration duration = Duration.between(standard, target);
+
+        return duration.toDays();
+    }
+
+    private Date getSevenDaysAgoDate() {
+        LocalDate currentDate = LocalDate.now();    // 현재 날짜
+        LocalDate sevenDaysAge = currentDate.minusDays(7);  // 7일 이전 날짜
+
+        return changeDateForm(sevenDaysAge);
+    }
+
+    private Date changeDateForm(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     private List<String> getPhotoUrl(Long ecotagId) {
@@ -202,15 +264,26 @@ public class ComplaintServiceImpl implements ComplaintService {
         return totalComplaints;
     }
 
-    private Ecotag isEqualPost(String latitudeValue, String longitudeValue) {
-        Double latitude = Double.valueOf(latitudeValue);
-        Double longitude = Double.valueOf(longitudeValue);
-        List<Ecotag> equalEcotag = ecotagRepository.findByLatitudeAndLongitude(latitude, longitude);
+    private Ecotag isEqualPost(ComplaintForm complaintForm) {
+        List<Ecotag> equalEcotag = ecotagRepository.findByEcotagType(complaintForm.getEcotag().getType());
 
-        if (equalEcotag.size() > 0) {
-            return equalEcotag.get(0);
+        for (Ecotag ecotag : equalEcotag) {
+            if (isEqualCoordinate(ecotag, complaintForm.getEcotag().getLatitude(), complaintForm.getEcotag().getLongitude())) {
+                return ecotag;
+            }
         }
         return null;
+    }
+
+    private boolean isEqualCoordinate(Ecotag originEcotag, String latitude, String longitude) {
+        String originLatitude = String.valueOf(originEcotag.getLatitude());
+        String originLogitude = String.valueOf(originEcotag.getLongitude());
+
+        if (Objects.equals(originLatitude, latitude) &&
+                Objects.equals(originLogitude, longitude)) {
+            return true;
+        }
+        return false;
     }
 
     private User findUser(String userId) {
@@ -223,6 +296,17 @@ public class ComplaintServiceImpl implements ComplaintService {
                 .complaint(complaint)
                 .detail(detail)
                 .build();
+    }
+
+    private Complaint processEqualComplaint(Ecotag newEcotag) {
+        return complaintRepository.findByEcotagId(newEcotag.getId());
+    }
+
+    private Complaint processDifferentComplaint(Ecotag newEcotag, User writer) {
+        return complaintRepository.save(Complaint.builder()
+                .ecotag(newEcotag)
+                .user(writer)
+                .build());
     }
 
 }

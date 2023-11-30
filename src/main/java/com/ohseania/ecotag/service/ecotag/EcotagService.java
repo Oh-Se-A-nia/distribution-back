@@ -3,6 +3,7 @@ package com.ohseania.ecotag.service.ecotag;
 import com.ohseania.ecotag.domain.ecotagVO.request.EcotagForm;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcoTypeCountInterface;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcotagCoordinate;
+import com.ohseania.ecotag.domain.ecotagVO.response.OnlyCoordinates;
 import com.ohseania.ecotag.entity.Ecotag;
 import com.ohseania.ecotag.entity.Region;
 import org.springframework.http.HttpStatus;
@@ -21,5 +22,7 @@ public interface EcotagService {
     Ecotag updateCumulativeCount(Ecotag originEcotag);
 
     ResponseEntity<List<EcotagCoordinate>> getCoordinate();
+
+    ResponseEntity<List<OnlyCoordinates>> getOnlyCoordinates();
 
 }

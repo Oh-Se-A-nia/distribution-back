@@ -1,5 +1,6 @@
 package com.ohseania.ecotag.service.ecotag;
 
+import com.ohseania.ecotag.domain.ecotagVO.response.OnlyCoordinates;
 import com.ohseania.ecotag.entity.Ecotag;
 import com.ohseania.ecotag.domain.ecotagVO.request.EcotagForm;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcoTypeCountInterface;
@@ -34,12 +35,12 @@ public class EcotagServiceImpl implements EcotagService {
     private final RegionService regionService;
     private final S3Service s3Service;
 
-    @Transactional(noRollbackFor = RuntimeException.class)
     @Override
     public HttpStatus uploadEcotag(EcotagForm ecotagForm) {
         Ecotag ecotag;
         try {
             Region region = regionService.formatRegion(ecotagForm.getLocation());
+            updateCumulativeCount(Long.parseLong(ecotagForm.getUserId()));
             ecotag = createEcotag(ecotagForm, region);
             ecotagRepository.save(ecotag);
             s3Service.uploadMedia(ecotagForm.getPicture(), ecotag);
@@ -51,8 +52,6 @@ public class EcotagServiceImpl implements EcotagService {
     }
 
     public Ecotag createEcotag(EcotagForm ecotagForm, Region region) {
-        updateCumulativeCount(Long.parseLong(ecotagForm.getUserId()));
-
         return Ecotag.builder()
                 .region(region)
                 .user(userRepository.findById(Long.parseLong(ecotagForm.getUserId())).get())
@@ -106,6 +105,30 @@ public class EcotagServiceImpl implements EcotagService {
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @Override
+    public ResponseEntity<List<OnlyCoordinates>> getOnlyCoordinates() {
+        List<OnlyCoordinates> onlyCoordinates = new ArrayList<>();
+        HttpStatus status;
+
+        try {
+            List<Ecotag> ecotags = ecotagRepository.findAll();
+
+            for (Ecotag ecotag : ecotags) {
+                onlyCoordinates.add(OnlyCoordinates.builder()
+                        .latitude(ecotag.getLatitude())
+                        .longitude(ecotag.getLongitude())
+                        .build());
+            }
+
+            status = HttpStatus.OK;
+
+        } catch (IllegalArgumentException e){
+            status = HttpStatus.BAD_REQUEST;
+        }
+
+        return new ResponseEntity<>(onlyCoordinates, status);
     }
 
     private List<EcotagCoordinate> complaintCoordinate() {

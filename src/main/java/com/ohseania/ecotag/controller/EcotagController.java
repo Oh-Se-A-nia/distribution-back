@@ -2,6 +2,7 @@ package com.ohseania.ecotag.controller;
 
 import com.ohseania.ecotag.domain.ecotagVO.request.EcotagForm;
 import com.ohseania.ecotag.domain.ecotagVO.response.EcotagCoordinate;
+import com.ohseania.ecotag.domain.ecotagVO.response.OnlyCoordinates;
 import com.ohseania.ecotag.service.ecotag.EcotagService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,15 +43,21 @@ public class EcotagController {
     }
 
     @ApiOperation(value = "지역별 가장 많은 쓰레기 조회")
-    @PostMapping("/most-trash")
+    @GetMapping("/most-trash")
     public ResponseEntity checkMostTrashByLocation() {
         return new ResponseEntity(ecotagService.trackMostTrash(), HttpStatus.OK);
     }
 
     @ApiOperation(value = "쓰레기 정보들의 좌표 값 조회")
-    @PostMapping("/coordinate")
+    @GetMapping("/coordinate")
     public ResponseEntity<List<EcotagCoordinate>> returnEcotagCoordinates () {
         return ecotagService.getCoordinate();
+    }
+
+    @ApiOperation(value = "쓰레기 좌표만 조회")
+    @GetMapping("/only-coordinates")
+    public ResponseEntity<List<OnlyCoordinates>> returnOnlyCoordinates(){
+        return ecotagService.getOnlyCoordinates();
     }
 
 }

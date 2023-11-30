@@ -3,6 +3,7 @@ package com.ohseania.ecotag.service.myPage;
 import com.ohseania.ecotag.constant.TrashType;
 import com.ohseania.ecotag.domain.complaintVO.response.MyComplaint;
 import com.ohseania.ecotag.entity.Complaint;
+import com.ohseania.ecotag.entity.MyPage;
 import com.ohseania.ecotag.entity.Photo;
 import com.ohseania.ecotag.entity.User;
 import com.ohseania.ecotag.repository.PhotoRepository;
@@ -37,20 +38,29 @@ public class MyPageServiceImpl implements MyPageService {
     public ResponseEntity<List<MyComplaint>> returnMyComplaintList(Long userId) {
         List<Complaint> complaints = complaintService.findUsersComplaint(userId);
         List<MyComplaint> myComplaint = new ArrayList<>();
-        int index = 0;
 
         for (Complaint complaint : complaints) {
             List<Photo> photo = photoRepository.findByEcotagId(complaint.getEcotag().getId());
+            List<String> photoUrl = getUrlSet(photo);
 
             myComplaint.add(MyComplaint.builder()
                     .processType(complaint.getProcessType())
-                    .url(photo.get(index++).getUrl())
+                    .url(photoUrl)
                     .regionName("#" + complaint.getEcotag().getRegion().getRegionName())
                     .ecotagType(sortEcotagType(complaint.getEcotag().getEcotagType()))
                     .build());
         }
 
         return new ResponseEntity<>(myComplaint, HttpStatus.OK);
+    }
+
+    private List<String> getUrlSet(List<Photo> photos) {
+        List<String> url = new ArrayList<>();
+        for (Photo photo : photos) {
+            url.add(photo.getUrl());
+        }
+
+        return url;
     }
 
     private String sortEcotagType(String originType) {

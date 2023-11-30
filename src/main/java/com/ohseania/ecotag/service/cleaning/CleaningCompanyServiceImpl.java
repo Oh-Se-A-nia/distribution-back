@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -32,9 +33,20 @@ public class CleaningCompanyServiceImpl implements CleaningCompanyService {
     }
 
     @Override
-    public ResponseEntity<List<CleaningCompany>> checkCleaningCompanys() {
+    public ResponseEntity<List<CompanyRegistration>> checkCleaningCompanys() {
         try {
-            return new ResponseEntity<>(cleaningCompanyRepository.findAll(), HttpStatus.OK);
+            List<CleaningCompany> cleaningCompanys = cleaningCompanyRepository.findAll();
+            List<CompanyRegistration> cleaningCompanyList = new ArrayList<>();
+
+            for(CleaningCompany cleaningCompany : cleaningCompanys) {
+                cleaningCompanyList.add(CompanyRegistration.builder()
+                        .name(cleaningCompany.getName())
+                        .callNumber(cleaningCompany.getCallNumber())
+                        .memo(cleaningCompany.getMemo())
+                        .build());
+            }
+
+            return new ResponseEntity<>(cleaningCompanyList, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

@@ -9,12 +9,11 @@ import com.ohseania.ecotag.entity.User;
 import com.ohseania.ecotag.repository.AdminRepository;
 import com.ohseania.ecotag.repository.PhotoRepository;
 import com.ohseania.ecotag.repository.UserRepository;
-import com.ohseania.ecotag.service.contribution.ContributionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +27,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PhotoRepository photoRepository;
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    private final ContributionService contributionService;
 
     @Override
     public ResponseEntity<UserInformation> validateUserInformaion(SignUpForm signUpForm) {
@@ -67,7 +66,6 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         User save = userRepository.save(user);
-        contributionService.createContributionForm(save);
 
         return new ResponseEntity<>(new UserInformation(signUpForm.getId()), HttpStatus.OK);
     }
